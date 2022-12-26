@@ -1,5 +1,4 @@
 import asyncio
-import time
 
 '''
 coroutine to scan a particular host's port - timeout of 3 seconds provided.
@@ -20,12 +19,17 @@ ports - iterable (range object) of ports to scan
 async def main(host, ports):
     print(f"scanning {host}")
     coros = [port_scanner(host, port) for port in ports]
+    '''
+    When scanning an entire port range, we will hit the problem where we cross the limit of number of files opened in out OS (check ulimit -n).
+    You can either increase this limit, or process these coroutines in batches. Either option works.
+    Batching will be a little slower but will take care of larger number of ports that can't be taken care of in one shot.
+    '''
     results = await asyncio.gather(*coros)
     for port, result in zip(ports, results):
         if result:
             print(f"{host}:{port} [OPEN]")
 
 host = "python.org"
-ports = range(443,444)
+ports = range(400,500)
 
 asyncio.run(main(host, ports))
